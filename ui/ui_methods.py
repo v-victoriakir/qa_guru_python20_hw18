@@ -1,6 +1,6 @@
 import allure
 
-from selene import browser, have
+from selene import browser, have, be
 
 BASE_URL = "https://demowebshop.tricentis.com"
 
@@ -19,5 +19,11 @@ class DemoWebShopUI:
 
     @allure.step("В корзину добавлен продукт {item_name} в количестве {quantity}")
     def check_added_item_quantity(self, item_name, quantity):
-        browser.element('.cart-item-row').should(have.text(item_name))
-        browser.element('.qty-input').should(have.value(str(quantity)))
+        row = browser.all('.cart-item-row').element_by(have.text(item_name))
+        row.element('.qty-input').should(have.value(str(quantity)))
+
+    @allure.step("Корзина очищена")
+    def empty_cart(self):
+        for element in browser.all('input[name=removefromcart]'):
+            element.should(be.clickable).click()
+        browser.element('input[name=updatecart]').click()

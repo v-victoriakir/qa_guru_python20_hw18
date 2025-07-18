@@ -1,8 +1,9 @@
-import logging
 import json
+import logging
+
 import allure
-from requests import Response
 from allure_commons.types import AttachmentType
+from requests import Response
 
 
 def response_logging(response: Response):
@@ -15,7 +16,6 @@ def response_logging(response: Response):
 
 
 def response_attaching(response: Response):
-
     allure.attach(
         body=response.request.url,
         name="Request url",

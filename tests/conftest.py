@@ -2,6 +2,7 @@ import pytest
 from selene import browser
 
 from api.api_methods import DemoWebShopApi
+from ui.ui_methods import DemoWebShopUI
 from utils import attach
 
 BASE_URL = "https://demowebshop.tricentis.com"
@@ -27,6 +28,8 @@ def browser_config():
 def authorized_user(browser_config):
     api = DemoWebShopApi()
     auth_cookies = api.login_and_get_cookies()
+
+    # Open any page to set cookies into browser context
     browser.open("/")
     browser.driver.add_cookie({
         "name": "NOPCOMMERCE.AUTH",
@@ -34,4 +37,13 @@ def authorized_user(browser_config):
         "domain": "demowebshop.tricentis.com",
         "path": "/"
     })
+
+    # # Reload with cookies set
     browser.open("/")
+
+    yield  # Test runs here
+
+    # open cart to empty it after each test
+    ui = DemoWebShopUI()
+    ui.cart_page_open()
+    ui.empty_cart()

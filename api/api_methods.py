@@ -23,14 +23,30 @@ class DemoWebShopApi:
             data={"Email": self.email, "Password": self.password, "RememberMe": False},
             allow_redirects=False
         )
-        cookies = response.cookies.get("NOPCOMMERCE.AUTH")
-        return cookies
+        assert response.status_code == 302, (
+            f"Login failed: expected 302 redirect, got {response.status_code}\n"
+            f"Response text: {response.text}"
+        )
+        auth_cookie = response.cookies.get("NOPCOMMERCE.AUTH")
+        assert auth_cookie is not None, "Login succeeded but no 'NOPCOMMERCE.AUTH' cookie was found."
+
+        self.session.cookies.set("NOPCOMMERCE.AUTH", auth_cookie, domain="demowebshop.tricentis.com")
+        return auth_cookie
 
     @allure.step("Добавление товара в корзину")
-    def add_item_in_shopping_cart(self, item_id, quantity):
+    def add_item_in_shopping_cart(self, item_id, quantity=1):
+        product_url = self.base_url + f"/addproducttocart/details/{item_id}/1"
+        data = {f"addtocart_{item_id}.EnteredQuantity": str(quantity)}
+
         response = self.session.post(
-            url=self.base_url + f"addproducttocart/details/{item_id}/1",
-            data={f'addtocart_{item_id}.EnteredQuantity': {quantity}},
-            allow_redirects=False
+            url=product_url,
+            data=data,
+            allow_redirects=False,
+            headers={
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-Requested-With": "XMLHttpRequest"
+            }
         )
+
+        assert response.status_code == 200, f"Failed to add item to cart: {response.status_code}, {response.text}"
         return response
