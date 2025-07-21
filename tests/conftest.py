@@ -27,23 +27,29 @@ def browser_config():
 @pytest.fixture(scope="function")
 def authorized_user(browser_config):
     api = DemoWebShopApi()
-    auth_cookies = api.login_and_get_cookies()
+    api.login_and_get_cookies()
 
-    # Open any page to set cookies into browser context
     browser.open("/")
-    browser.driver.add_cookie({
-        "name": "NOPCOMMERCE.AUTH",
-        "value": auth_cookies,
-        "domain": "demowebshop.tricentis.com",
-        "path": "/"
-    })
-
-    # # Reload with cookies set
+    for cookie in api.session.cookies:
+        browser.driver.add_cookie({
+            "name": cookie.name,
+            "value": cookie.value,
+            "domain": cookie.domain,
+            "path": cookie.path
+        })
     browser.open("/")
 
-    yield  # Test runs here
-
-    # open cart to empty it after each test
     ui = DemoWebShopUI()
-    ui.cart_page_open()
+
+    # A helper method inside fixture to add items before yielding
+    def add_items_to_cart(items):
+        # items: list of dicts like [{'item_id': 45, 'quantity': 5}, ...]
+        for item in items:
+            api.add_item_in_shopping_cart(item_id=item['item_id'], quantity=item['quantity'])
+
+    # Attach this helper so tests can call if they want
+    ui.api_add_items = add_items_to_cart
+
+    yield ui, api
+
     ui.empty_cart()

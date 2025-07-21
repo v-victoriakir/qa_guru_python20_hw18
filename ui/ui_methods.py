@@ -2,16 +2,11 @@ import allure
 
 from selene import browser, have, be
 
-BASE_URL = "https://demowebshop.tricentis.com"
-
 
 class DemoWebShopUI:
-    def __init__(self):
-        self.cart_url = BASE_URL + "/cart"
-
     @allure.step("Открыта страница корзины")
     def cart_page_open(self):
-        browser.open(self.cart_url)
+        browser.open("/cart")
 
     @allure.step("В корзину добавлен продукт {item_name}")
     def check_item_is_added_to_cart(self, item_name):
@@ -24,6 +19,8 @@ class DemoWebShopUI:
 
     @allure.step("Корзина очищена")
     def empty_cart(self):
+        self.cart_page_open()
         for element in browser.all('input[name=removefromcart]'):
             element.should(be.clickable).click()
         browser.element('input[name=updatecart]').click()
+        browser.element(".order-summary-content").should(have.text("Your Shopping Cart is empty!"))
