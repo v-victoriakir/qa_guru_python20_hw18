@@ -3,6 +3,7 @@ import os
 import allure
 import requests
 from dotenv import load_dotenv
+from helpers.logger import response_logging, response_attaching
 
 load_dotenv()
 
@@ -26,6 +27,10 @@ class DemoWebShopApi:
             f"Login failed: expected 302 redirect, got {response.status_code}\n"
             f"Response text: {response.text}"
         )
+
+        # Add logging and Allure attachments
+        response_logging(response)
+        response_attaching(response)
 
         auth_cookie = response.cookies.get("NOPCOMMERCE.AUTH")
         assert auth_cookie is not None, "Login succeeded but no 'NOPCOMMERCE.AUTH' cookie was found."
@@ -51,6 +56,10 @@ class DemoWebShopApi:
                 "X-Requested-With": "XMLHttpRequest"
             }
         )
+
+        # Add logging and Allure attachments
+        response_logging(response)
+        response_attaching(response)
 
         assert response.status_code == 200, f"Failed to add item to cart: {response.status_code}, {response.text}"
         return response

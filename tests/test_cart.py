@@ -3,6 +3,9 @@ import allure
 from api.api_methods import DemoWebShopApi
 from ui.ui_methods import DemoWebShopUI
 
+@allure.epic("demowebshop")
+@allure.feature("Корзина")
+@allure.story("Добавление товаров в корзину")
 
 @allure.title("Добавление одного товара в корзину")
 def test_to_add_single_item_in_cart(authorized_user):
